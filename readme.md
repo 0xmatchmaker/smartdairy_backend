@@ -27,19 +27,48 @@ memory_backend/
 
 ### Memory 模型
 - 基础信息
-  - content: 记忆内容（文本格式）
-  - tags: 标签数组（用于分类和检索）
-  - created_at: 创建时间
-  - updated_at: 更新时间
+  - id: UUID 主键
+  - user_id: 关联用户ID
+  - memory_type: 记忆类型
+    - TIMELINE: 时间轴记录
+    - CORE_FOCUS: 核心关注点
+    - DREAM_TRACK: 梦想追踪
+    - QUICK_NOTE: 快速记录
+  - content: 记忆内容
+  - tags: 标签数组
+
+  - 时间轴功能
+    - timeline_time: 时间点
+    - is_preset: 是否预设时间点
+
+  - 核心关注点
+    - focus_type: 关注点类型
+      - CHANGE: 今日改变
+      - EXTERNAL_EXPECT: 外部期待
+      - SELF_EXPECT: 个人期待
+      - IMPORTANT: 重要事项
+
+  - 梦想追踪
+    - dream_id: 关联的梦想ID
+    - progress_value: 进度值
+
+  - 快速记录
+    - voice_url: 语音文件URL
+    - template_id: 使用的模板ID
 
 - 分析信息
   - emotion_score: 情绪分析结果
   - vector: 语义向量表示
 
-- 关联关系
-  - user: 所属用户
-  - related_memories: 相关记忆
-  - referenced_by: 被引用记忆
+### Dream 模型
+- 基础信息
+  - id: UUID 主键
+  - user_id: 关联用户ID
+  - title: 梦想标题
+  - description: 详细描述
+  - target_date: 目标日期
+  - target_value: 目标值
+  - current_value: 当前进度
 
 ## 数据库配置
 1. 创建数据库
@@ -78,3 +107,28 @@ POSTGRES_DB=memory_db
 + - echo: 在调试模式下打印 SQL 语句
 + - autocommit: 默认关闭自动提交
 + - autoflush: 默认关闭自动刷新
+
+## 备注：整体项目设计要求：
+1. 时间轴框架
+   - 预设基本时间点(起床、三餐、就寝等)
+   - 简单点击或拖拽即可标记
+   - 可选择性添加简短备注
+2. 核心关注点(每日必填)
+   - 今日改变(What changed)
+   - 外部期待(Expected from others)
+   - 个人期待(My expectations)
+   - 重要事项(What really matters)
+3. 梦想追踪区
+   - 固定展示区域显示长期目标
+   - 记录与梦想相关的每日进展
+   - 可视化展示距离目标的进度
+4. 快速记录功能
+   - 语音输入
+   - 快捷短语
+   - 标签系统
+   - 模板功能
+5. 特别前端要求（需要后端配合）:
+- 界面要简洁,突出重要内容
+- 日常事项尽量用选择/点击方式完成
+- 重点关注"改变"和"期待"
+- 让用户容易看到自己的进步和距离目标的距离
