@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Text, ForeignKey, JSON, Table, String, Float, Enum, Time, Boolean, Date
+from sqlalchemy import Column, Text, ForeignKey, JSON, Table, String, Float, Enum, Time, Boolean, Date, DateTime, Integer
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 # 暂时注释掉关系导入
 # from sqlalchemy.orm import relationship
@@ -40,6 +40,18 @@ class Memory(Base):
     emotion_score = Column(JSON, default={}, comment="情绪分析结果")
     vector = Column(ARRAY(Float), nullable=True, comment="语义向量")
     
+    # 添加时间段相关字段
+    start_time = Column(DateTime, nullable=True, comment="活动开始时间")
+    end_time = Column(DateTime, nullable=True, comment="活动结束时间")
+    duration = Column(Float, nullable=True, comment="持续时间（分钟）")
+    is_ongoing = Column(Boolean, default=False, comment="是否正在进行")
+    target_duration = Column(Float, nullable=True, comment="计划持续时间（分钟）")
+    completion_rate = Column(Float, nullable=True, comment="完成度")
+    
+    # 关联前后记忆
+    previous_memory_id = Column(UUID(as_uuid=True), ForeignKey("memories.id"), nullable=True)
+    next_memory_id = Column(UUID(as_uuid=True), ForeignKey("memories.id"), nullable=True)
+    
     # 关联关系 - 暂时注释掉
     # user = relationship("User", back_populates="memories")
     # related_memories = relationship(
@@ -49,6 +61,11 @@ class Memory(Base):
     #     secondaryjoin=id==memory_relations.c.target_id,
     #     backref='referenced_by'
     # )
+    
+    # 添加并行相关字段
+    allow_parallel = Column(Boolean, default=False, comment="是否允许与其他活动并行")
+    parallel_group = Column(String, nullable=True, comment="并行组标识，同组活动可以并行")
+    priority = Column(Integer, default=1, comment="活动优先级，用于并行活动的排序")
 
     @classmethod
     async def create_from_text(cls, text: str, user_id: UUID, db: Session) -> "Memory":
@@ -66,3 +83,17 @@ class Memory(Base):
         )
             
         return memory 
+
+    @property
+    def calculate_duration(self):
+        """计算持续时间"""
+        if self.start_time and self.end_time:
+            return (self.end_time - self.start_time).total_seconds() / 60
+        return None
+
+    @property
+    def calculate_completion_rate(self):
+        """计算完成度"""
+        if self.duration and self.target_duration:
+            return (self.duration / self.target_duration) * 100
+        return None 
