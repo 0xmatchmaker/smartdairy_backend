@@ -84,29 +84,29 @@ POSTGRES_PASSWORD=your_password
 POSTGRES_DB=memory_db
 ```
 
-+ ## 数据库会话管理
-+ 
-+ 系统使用 SQLAlchemy 的会话管理机制：
-+ 
-+ ```python
-+ # 在 API 路由中使用数据库会话
-+ @app.get("/memories/")
-+ def read_memories(db: Session = Depends(get_db)):
-+     memories = db.query(Memory).all()
-+     return memories
-+ ```
-+ 
-+ 特点：
-+ - 自动连接池管理
-+ - 自动会话清理
-+ - 支持事务管理
-+ - 内置连接健康检查
-+ 
-+ 配置参数：
-+ - pool_pre_ping: 启用连接健康检查
-+ - echo: 在调试模式下打印 SQL 语句
-+ - autocommit: 默认关闭自动提交
-+ - autoflush: 默认关闭自动刷新
+## 数据库会话管理
+
+系统使用 SQLAlchemy 的会话管理机制：
+
+```python
+# 在 API 路由中使用数据库会话
+@app.get("/memories/")
+def read_memories(db: Session = Depends(get_db)):
+    memories = db.query(Memory).all()
+    return memories
+```
+
+特点：
+- 自动连接池管理
+- 自动会话清理
+- 支持事务管理
+- 内置连接健康检查
+
+配置参数：
+- pool_pre_ping: 启用连接健康检查
+- echo: 在调试模式下打印 SQL 语句
+- autocommit: 默认关闭自动提交
+- autoflush: 默认关闭自动刷新
 
 ## 备注：整体项目设计要求：
 1. 时间轴框架
@@ -132,3 +132,80 @@ POSTGRES_DB=memory_db
 - 日常事项尽量用选择/点击方式完成
 - 重点关注"改变"和"期待"
 - 让用户容易看到自己的进步和距离目标的距离
+
+## 开发说明
+
+### 阶段性开发计划
+1. 第一阶段：基础认证功能（已完成 ✅）
+   - [x] 用户注册
+   - [x] 用户登录
+   - [x] JWT认证
+   - [x] 基础CRUD操作
+
+2. 第二阶段：记忆管理（进行中）
+   - [ ] Memory模型关联
+   - [ ] 时间轴功能
+   - [ ] 核心关注点功能
+
+3. 第三阶段：目标追踪（待实现）
+   - [ ] Dream模型关联
+   - [ ] 进度追踪功能
+   - [ ] 模板功能
+
+4. 第四阶段：高级功能（待实现）
+   - [ ] LLM集成
+   - [ ] 情感分析
+   - [ ] 关联分析
+
+### 已实现的 API 端点
+
+1. 认证相关
+```bash
+# 用户注册
+POST /api/v1/auth/register
+Content-Type: application/json
+{
+    "email": "user@example.com",
+    "username": "username",
+    "password": "password123"
+}
+
+# 用户登录
+POST /api/v1/auth/login
+Content-Type: application/x-www-form-urlencoded
+username=user@example.com&password=password123
+```
+
+2. 记忆管理
+```bash
+# 创建记忆
+POST /api/v1/memories/
+Authorization: Bearer {token}
+Content-Type: application/json
+{
+    "content": "记忆内容",
+    "memory_type": "quick_note",
+    "tags": ["标签1", "标签2"]
+}
+
+# 获取记忆列表
+GET /api/v1/memories/
+Authorization: Bearer {token}
+
+# 获取记忆详情
+GET /api/v1/memories/{memory_id}
+Authorization: Bearer {token}
+
+# 更新记忆
+PATCH /api/v1/memories/{memory_id}
+Authorization: Bearer {token}
+Content-Type: application/json
+{
+    "content": "更新的内容",
+    "tags": ["新标签"]
+}
+
+# 删除记忆
+DELETE /api/v1/memories/{memory_id}
+Authorization: Bearer {token}
+```

@@ -14,9 +14,15 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
+    SQL_DEBUG: bool = False
     
     # LLM设置
     APPL_API_KEY: Optional[str] = None
+    
+    @property
+    def get_database_url(self) -> str:
+        """构建数据库连接URL"""
+        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
     
     class Config:
         env_file = ".env"

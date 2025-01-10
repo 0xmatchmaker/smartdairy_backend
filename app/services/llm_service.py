@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional
-from app.db.models.memory import MemoryType, CoreFocusType
+from app.db.models.enums import MemoryType, CoreFocusType
 from appl import gen, ppl, AIRole
 from datetime import datetime, timedelta
 
