@@ -1,11 +1,22 @@
+# Web 框架和服务器
 fastapi>=0.68.0
 uvicorn>=0.15.0
+gunicorn>=20.1.0
+python-multipart>=0.0.5
+
+# 数据库相关
 sqlalchemy>=1.4.0
-pydantic>=1.8.0
-alembic>=1.7.0
 psycopg2-binary>=2.9.0
+alembic>=1.7.0
+
+# 数据验证和设置
+pydantic>=1.8.0
+pydantic-settings>=2.0.0
+
+# 认证和加密
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 bcrypt>=4.0.1
-python-multipart>=0.0.5
-pydantic-settings>=2.0.0 
+
+# 日志和监控（可选）
+python-json-logger>=2.0.0 
