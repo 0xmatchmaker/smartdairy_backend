@@ -143,9 +143,12 @@ def read_memories(db: Session = Depends(get_db)):
    - [x] 基础CRUD操作
 
 2. 第二阶段：记忆管理（进行中）
-   - [ ] Memory模型关联
+   - [x] Memory模型关联
    - [x] 时间轴功能
-   - [ ] 核心关注点功能
+   - [x] 核心关注点功能
+      - [x] 重要事项管理
+      - [x] 时间投入跟踪
+      - [ ] 其他关注点类型
 
 3. 第三阶段：目标追踪（待实现）
    - [ ] Dream模型关联
@@ -210,13 +213,50 @@ DELETE /api/v1/memories/{memory_id}
 Authorization: Bearer {token}
 ```
 
+3. 重要事项管理
+```bash
+# 创建重要事项
+POST /api/v1/core-focus/important
+Content-Type: application/json
+{
+    "content": "任务内容",
+    "target_minutes": 240,
+    "date": "2024-01-11",
+    "tags": ["标签1", "标签2"],
+    "description": "详细说明"
+}
+
+# 查看每日重要事项
+GET /api/v1/core-focus/important/daily?date=2024-01-11
+
+# 开始重要事项活动
+POST /api/v1/core-focus/important/{matter_id}/start
+Content-Type: application/json
+{
+    "content": "活动说明"
+}
+
+# 结束重要事项活动
+POST /api/v1/core-focus/important/{matter_id}/end
+Content-Type: application/json
+{
+    "content": "完成说明"
+}
+
+# 查看重要事项活动历史
+GET /api/v1/core-focus/important/{matter_id}/activities
+```
+
 ## 项目进展
 
-### 2024-01-11 时间轴功能
-完成了时间轴基础功能的开发：
-- 支持活动的开始和结束时间记录
-- 实现活动的并行处理能力
-- 添加了完成度计算和备注功能
-- 优化了时间显示格式
+### 2024-01-11 重要事项功能
+完成了重要事项功能的开发：
+- 支持创建重要事项并设置目标时间
+- 实现与时间轴活动的关联
+- 提供活动历史查询接口
+- 支持完成度实时计算
+- 优化了活动记录格式
+- 添加了格式化时间显示
+- 实现了活动标签继承
 
 
