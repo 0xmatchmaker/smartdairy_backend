@@ -8,7 +8,8 @@ from app.services.timeline_service import TimelineService
 from app.api.v1.schemas.timeline import (
     TimelineCreate,
     TimelineUpdate,
-    TimelineResponse
+    TimelineResponse,
+    TimelineEndRequest
 )
 
 router = APIRouter()
@@ -33,7 +34,7 @@ async def start_activity(
 
 @router.post("/end", response_model=TimelineResponse)
 async def end_activity(
-    content: Optional[str] = None,
+    request: TimelineEndRequest,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -41,7 +42,7 @@ async def end_activity(
     timeline_service = TimelineService(db)
     activity = await timeline_service.end_activity(
         user_id=current_user.id,
-        content=content
+        content=request.content
     )
     if not activity:
         raise HTTPException(status_code=404, detail="No ongoing activity found")

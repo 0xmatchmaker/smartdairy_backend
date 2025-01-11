@@ -144,7 +144,7 @@ def read_memories(db: Session = Depends(get_db)):
 
 2. 第二阶段：记忆管理（进行中）
    - [ ] Memory模型关联
-   - [ ] 时间轴功能
+   - [x] 时间轴功能
    - [ ] 核心关注点功能
 
 3. 第三阶段：目标追踪（待实现）
@@ -209,3 +209,14 @@ Content-Type: application/json
 DELETE /api/v1/memories/{memory_id}
 Authorization: Bearer {token}
 ```
+
+## 项目进展
+
+### 2024-01-11 时间轴功能
+完成了时间轴基础功能的开发：
+- 支持活动的开始和结束时间记录
+- 实现活动的并行处理能力
+- 添加了完成度计算和备注功能
+- 优化了时间显示格式
+
+

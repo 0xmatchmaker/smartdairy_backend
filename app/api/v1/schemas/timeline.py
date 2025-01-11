@@ -53,3 +53,6 @@ class TimelineResponse(BaseModel):
 
     class Config:
         from_attributes = True 
+
+class TimelineEndRequest(BaseModel):
+    content: Optional[str] = None 

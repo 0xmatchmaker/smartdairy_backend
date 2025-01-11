@@ -4,6 +4,10 @@ from sqlalchemy.orm import Session
 from app.db.models.memory import Memory
 from app.db.models.enums import MemoryType
 from uuid import UUID
+from app.core.logger import setup_logger
+
+# 配置日志
+logger = setup_logger("timeline")
 
 class TimelineService:
     def __init__(self, db: Session):
@@ -32,6 +36,7 @@ class TimelineService:
                 activity.end_time = datetime.now()
                 activity.duration = activity.calculate_duration
                 activity.completion_rate = activity.calculate_completion_rate
+                logger.info(f"结束已有活动: {activity.content}")
         
         # 创建新活动
         new_activity = Memory(
@@ -42,7 +47,7 @@ class TimelineService:
             start_time=datetime.now(),
             is_ongoing=True,
             target_duration=target_duration,
-            allow_parallel=allow_parallel,  # 保存并行设置
+            allow_parallel=allow_parallel,
             parallel_group=parallel_group,
             priority=priority
         )
@@ -50,6 +55,7 @@ class TimelineService:
         self.db.add(new_activity)
         self.db.commit()
         self.db.refresh(new_activity)
+        logger.info(f"开始新活动: {content}")
         return new_activity
 
     async def end_activity(
@@ -64,6 +70,7 @@ class TimelineService:
         ).first()
         
         if not ongoing_activity:
+            logger.warning("未找到进行中的活动")
             return None
             
         ongoing_activity.is_ongoing = False
@@ -72,17 +79,24 @@ class TimelineService:
         ongoing_activity.completion_rate = ongoing_activity.calculate_completion_rate
         
         if content:
-            # 修改备注格式，确保原始内容和备注都能清晰显示
-            ongoing_activity.content = (
+            new_content = (
                 f"{ongoing_activity.content}\n"
                 f"---\n"
                 f"完成时间：{ongoing_activity.end_time.strftime('%H:%M:%S')}\n"
                 f"持续时间：{ongoing_activity.calculate_duration:.1f}分钟\n"
                 f"完成备注：{content}"
             )
+            ongoing_activity.content = new_content
         
-        self.db.commit()
-        self.db.refresh(ongoing_activity)
+        try:
+            self.db.commit()
+            self.db.refresh(ongoing_activity)
+            logger.info(f"活动已完成: {ongoing_activity.content}")
+        except Exception as e:
+            logger.error(f"更新失败: {str(e)}")
+            self.db.rollback()
+            raise
+        
         return ongoing_activity
 
     async def get_daily_timeline(
@@ -99,7 +113,7 @@ class TimelineService:
             Memory.memory_type == MemoryType.TIMELINE,
             Memory.start_time >= date.replace(hour=0, minute=0, second=0),
             Memory.start_time < date.replace(hour=23, minute=59, second=59)
-        ).order_by(Memory.start_time).all() 
+        ).order_by(Memory.start_time).all()
 
     async def get_current_activities(
         self,
