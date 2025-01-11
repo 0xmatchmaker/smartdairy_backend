@@ -46,121 +46,6 @@ GRANT ALL PRIVILEGES ON DATABASE memory_db TO memory_user;
 \q
 ```
 
-#### 2.3 项目部署
-```bash
-# 创建项目目录
-mkdir -p /var/www/memory_backend
-cd /var/www/memory_backend
-
-# 克隆项目
-git clone <项目地址> .
-git checkout deploy  # 切换到部署分支
-
-# 创建虚拟环境
-python3 -m venv venv
-source venv/bin/activate
-
-# 安装依赖
-pip install -r requirements.txt
-```
-
-#### 2.4 环境变量配置
-创建 `.env` 文件并配置以下变量：
-```bash
-# 数据库配置
-POSTGRES_SERVER=localhost
-POSTGRES_USER=memory_user
-POSTGRES_PASSWORD=your_password
-POSTGRES_DB=memory_db
-
-# JWT配置
-SECRET_KEY=your-secret-key-here
-ACCESS_TOKEN_EXPIRE_MINUTES=1440  # 24小时
-
-# 其他配置
-SQL_DEBUG=false
-```
-
-#### 2.5 数据库迁移
-```bash
-# 执行数据库迁移
-alembic upgrade head
-```
-
-### 3. 服务配置
-
-#### 3.1 Gunicorn 服务
-创建服务文件：
-```bash
-sudo nano /etc/systemd/system/memory_backend.service
-```
-
-配置内容：
-```ini
-[Unit]
-Description=Memory Backend
-After=network.target
-
-[Service]
-User=ubuntu
-Group=www-data
-WorkingDirectory=/var/www/memory_backend
-Environment="PATH=/var/www/memory_backend/venv/bin"
-ExecStart=/var/www/memory_backend/venv/bin/gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b unix:/tmp/memory_backend.sock
-
-[Install]
-WantedBy=multi-user.target
-```
-
-#### 3.2 Nginx 配置
-```nginx
-server {
-    listen 80;
-    server_name your_domain.com;  # 替换为实际域名
-
-    location / {
-        proxy_pass http://unix:/tmp/memory_backend.sock;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-### 4. 启动服务
-```bash
-# 启动后端服务
-sudo systemctl start memory_backend
-sudo systemctl enable memory_backend
-
-# 启动 Nginx
-sudo systemctl restart nginx
-```
-
-### 5. 维护指南
-
-#### 5.1 查看日志
-```bash
-# 应用日志
-sudo journalctl -u memory_backend
-
-# Nginx 日志
-sudo tail -f /var/log/nginx/access.log
-sudo tail -f /var/log/nginx/error.log
-```
-
-#### 5.2 更新部署
-```bash
-cd /var/www/memory_backend
-git pull
-source venv/bin/activate
-pip install -r requirements.txt
-alembic upgrade head
-sudo systemctl restart memory_backend
-```
-
 ## API 文档
 部署完成后，可以通过以下地址访问 API 文档：
 - Swagger UI: `http://your_domain/docs`
@@ -402,6 +287,124 @@ Content-Type: application/json
 # 查看重要事项活动历史
 GET /api/v1/core-focus/important/{matter_id}/activities
 ```
+
+
+#### 2.3 项目部署
+```bash
+# 创建项目目录
+mkdir -p ～/memory_backend
+cd ～/memory_backend
+
+# 克隆项目
+git clone <项目地址> .
+git checkout deploy  # 切换到部署分支
+
+# 创建虚拟环境
+python3 -m venv venv
+source venv/bin/activate
+
+# 安装依赖
+pip install -r requirements.txt
+```
+
+#### 2.4 环境变量配置
+创建 `.env` 文件并配置以下变量：
+```bash
+# 数据库配置
+POSTGRES_SERVER=localhost
+POSTGRES_USER=memory_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=memory_db
+
+# JWT配置
+SECRET_KEY=your-secret-key-here
+ACCESS_TOKEN_EXPIRE_MINUTES=1440  # 24小时
+
+# 其他配置
+SQL_DEBUG=false
+```
+
+#### 2.5 数据库迁移
+```bash
+# 执行数据库迁移
+alembic upgrade head
+```
+
+### 3. 服务配置
+
+#### 3.1 Gunicorn 服务
+创建服务文件：
+```bash
+sudo nano /etc/systemd/system/memory_backend.service
+```
+
+配置内容：
+```ini
+[Unit]
+Description=Memory Backend
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=~/memory_backend
+Environment="PATH=～/memory_backend/venv/bin"
+ExecStart=～/memory_backend/venv/bin/gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b unix:/tmp/memory_backend.sock
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### 3.2 Nginx 配置
+```nginx
+server {
+    listen 80;
+    server_name your_domain.com;  # 替换为实际域名
+
+    location / {
+        proxy_pass http://unix:/tmp/memory_backend.sock;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### 4. 启动服务
+```bash
+# 启动后端服务
+sudo systemctl start memory_backend
+sudo systemctl enable memory_backend
+
+# 启动 Nginx
+sudo systemctl restart nginx
+```
+
+### 5. 维护指南
+
+#### 5.1 查看日志
+```bash
+# 应用日志
+sudo journalctl -u memory_backend
+
+# Nginx 日志
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+```
+
+#### 5.2 更新部署
+```bash
+cd /var/www/memory_backend
+git pull
+source venv/bin/activate
+pip install -r requirements.txt
+alembic upgrade head
+sudo systemctl restart memory_backend
+```
+
+
 
 ## 项目进展
 
