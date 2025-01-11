@@ -44,9 +44,9 @@ class Memory(Base):
     # 添加时间段相关字段
     start_time = Column(DateTime, nullable=True, comment="活动开始时间")
     end_time = Column(DateTime, nullable=True, comment="活动结束时间")
-    duration = Column(Float, nullable=True, comment="持续时间（分钟）")
+    duration = Column(Float, nullable=True, comment="持续时间（秒）")
     is_ongoing = Column(Boolean, default=False, comment="是否正在进行")
-    target_duration = Column(Float, nullable=True, comment="计划持续时间（分钟）")
+    target_duration = Column(Float, nullable=True, comment="计划持续时间（秒）")
     completion_rate = Column(Float, nullable=True, comment="完成度")
     
     # 关联前后记忆
@@ -87,16 +87,15 @@ class Memory(Base):
 
     @property
     def calculate_duration(self) -> Optional[float]:
-        """计算持续时间（分钟）"""
+        """计算持续时间（秒）"""
         if not self.end_time or not self.start_time:
             return None
         
-        duration_seconds = (self.end_time - self.start_time).total_seconds()
-        return duration_seconds / 60  # 转换为分钟
+        return (self.end_time - self.start_time).total_seconds()  # 直接返回秒
 
     @property
-    def calculate_completion_rate(self):
-        """计算完成度"""
+    def calculate_completion_rate(self) -> Optional[float]:
+        """计算完成度（百分比）"""
         if self.duration and self.target_duration:
-            return (self.duration / self.target_duration) * 100
+            return (self.duration / self.target_duration) * 100  # 直接用秒计算
         return None 

@@ -61,8 +61,8 @@ class ImportantMatterResponse(BaseModel):
         return cls(
             id=memory.id,
             content=main_content,
-            target_minutes=memory.target_duration / 60 if memory.target_duration else 0,
-            actual_minutes=memory.duration if memory.duration else 0,
+            target_minutes=memory.target_duration / 60 if memory.target_duration else 0,  # 秒转分钟显示
+            actual_minutes=memory.duration / 60 if memory.duration else 0,  # 秒转分钟显示
             completion_rate=memory.completion_rate if memory.completion_rate else 0,
             date=memory.start_time.date(),
             tags=memory.tags,

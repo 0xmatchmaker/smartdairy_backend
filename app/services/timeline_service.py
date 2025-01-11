@@ -5,6 +5,7 @@ from app.db.models.memory import Memory
 from app.db.models.enums import MemoryType
 from uuid import UUID
 from app.core.logger import setup_logger
+from fastapi import HTTPException
 
 # 配置日志
 logger = setup_logger("timeline")
@@ -83,7 +84,7 @@ class TimelineService:
                 f"{ongoing_activity.content}\n"
                 f"---\n"
                 f"完成时间：{ongoing_activity.end_time.strftime('%H:%M:%S')}\n"
-                f"持续时间：{ongoing_activity.calculate_duration:.1f}分钟\n"
+                f"持续时间：{ongoing_activity.duration / 60:.1f}分钟\n"
                 f"完成备注：{content}"
             )
             ongoing_activity.content = new_content

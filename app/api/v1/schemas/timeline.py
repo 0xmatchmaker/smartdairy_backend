@@ -47,8 +47,8 @@ class TimelineResponse(BaseModel):
         """格式化持续时间"""
         if self.duration is None:
             return None
-        minutes = int(self.duration)
-        seconds = int((self.duration - minutes) * 60)
+        minutes = int(self.duration / 60)
+        seconds = int(self.duration % 60)
         return f"{minutes}分{seconds}秒"
 
     class Config:

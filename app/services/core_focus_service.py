@@ -90,12 +90,12 @@ class CoreFocusService:
             Memory.start_time < datetime.combine(matter.start_time.date(), datetime.max.time())
         ).all()
         
-        total_minutes = sum(
+        total_seconds = sum(
             record.duration or 0
             for record in timeline_records
         )
         
-        return total_minutes * 60  # 转换为秒数返回
+        return total_seconds  # 返回秒数
 
     async def start_important_matter_activity(
         self,
