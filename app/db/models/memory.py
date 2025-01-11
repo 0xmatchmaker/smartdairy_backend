@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 import uuid
 from .base import Base
 from .enums import MemoryType, CoreFocusType
+from typing import Optional
 
 # 记忆关联的中间表 - 暂时注释掉
 # memory_relations = Table(
@@ -85,11 +86,13 @@ class Memory(Base):
         return memory 
 
     @property
-    def calculate_duration(self):
-        """计算持续时间"""
-        if self.start_time and self.end_time:
-            return (self.end_time - self.start_time).total_seconds() / 60
-        return None
+    def calculate_duration(self) -> Optional[float]:
+        """计算持续时间（分钟）"""
+        if not self.end_time or not self.start_time:
+            return None
+        
+        duration_seconds = (self.end_time - self.start_time).total_seconds()
+        return duration_seconds / 60  # 转换为分钟
 
     @property
     def calculate_completion_rate(self):

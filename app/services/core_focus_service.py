@@ -19,7 +19,6 @@ class CoreFocusService:
         user_id: UUID,
         content: str,
         target_minutes: float,
-        date: date,
         tags: List[str] = [],
         description: Optional[str] = None
     ) -> Memory:
@@ -38,7 +37,7 @@ class CoreFocusService:
             focus_type=CoreFocusType.IMPORTANT,
             target_duration=target_minutes * 60,
             tags=tags,
-            start_time=datetime.combine(date, datetime.min.time()),
+            start_time=datetime.now(),
             is_ongoing=True
         )
         
@@ -91,12 +90,12 @@ class CoreFocusService:
             Memory.start_time < datetime.combine(matter.start_time.date(), datetime.max.time())
         ).all()
         
-        total_seconds = sum(
-            (record.duration or 0) * 60
+        total_minutes = sum(
+            record.duration or 0
             for record in timeline_records
         )
         
-        return total_seconds  # 返回秒数 
+        return total_minutes * 60  # 转换为秒数返回
 
     async def start_important_matter_activity(
         self,

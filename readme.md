@@ -417,5 +417,6 @@ sudo systemctl restart memory_backend
 - 优化了活动记录格式
 - 添加了格式化时间显示
 - 实现了活动标签继承
-
+完成部署测试：
+- 部署到腾讯云
 

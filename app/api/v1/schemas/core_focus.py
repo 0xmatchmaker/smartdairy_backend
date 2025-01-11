@@ -10,7 +10,7 @@ class ImportantMatterCreate(BaseModel):
     """创建重要事项"""
     content: str
     target_minutes: float
-    date: date
+    # 移除 date 字段，改用系统时间
     tags: List[str] = []
     description: Optional[str] = None
 
@@ -19,7 +19,6 @@ class ImportantMatterCreate(BaseModel):
             "example": {
                 "content": "编程学习",
                 "target_minutes": 240,
-                "date": "2024-01-11",
                 "tags": ["学习", "编程"],
                 "description": "完成FastAPI项目的核心功能"
             }
@@ -88,14 +87,14 @@ class ImportantMatterWithActivities(BaseModel):
         matter: Memory,
         activities: List[Memory]
     ) -> "ImportantMatterWithActivities":
-        total_seconds = sum(
-            (activity.duration or 0) * 60
+        total_minutes = sum(
+            activity.duration or 0  # 这里是累积计算
             for activity in activities
         )
         
         return cls(
             matter=ImportantMatterResponse.from_memory(matter),
             activities=[TimelineResponse.from_orm(activity) for activity in activities],
-            total_minutes=total_seconds / 60,
-            completion_rate=(total_seconds / (matter.target_duration or 1)) * 100
-        ) 
+            total_minutes=total_minutes,  # 保持分钟单位
+            completion_rate=(total_minutes * 60 / (matter.target_duration or 1)) * 100  # 转换为秒再除以目标秒数
+        )

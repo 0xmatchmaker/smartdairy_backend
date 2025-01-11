@@ -23,7 +23,6 @@ async def create_important_matter(
         user_id=current_user.id,
         content=matter.content,
         target_minutes=matter.target_minutes,
-        date=matter.date,
         tags=matter.tags,
         description=matter.description
     )
