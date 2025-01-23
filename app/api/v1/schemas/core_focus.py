@@ -87,14 +87,14 @@ class ImportantMatterWithActivities(BaseModel):
         matter: Memory,
         activities: List[Memory]
     ) -> "ImportantMatterWithActivities":
-        total_minutes = sum(
-            activity.duration or 0  # 这里是累积计算
+        total_seconds = sum(  # 改名更清晰
+            activity.duration or 0  # 这里是秒
             for activity in activities
         )
         
         return cls(
             matter=ImportantMatterResponse.from_memory(matter),
             activities=[TimelineResponse.from_orm(activity) for activity in activities],
-            total_minutes=total_minutes,  # 保持分钟单位
-            completion_rate=(total_minutes * 60 / (matter.target_duration or 1)) * 100  # 转换为秒再除以目标秒数
+            total_minutes=total_seconds / 60,  # 秒转分钟显示
+            completion_rate=(total_seconds / (matter.target_duration or 1)) * 100  # 直接用秒计算
         )
