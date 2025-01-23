@@ -74,7 +74,8 @@ class Memory(Base):
     target_value = Column(Float, nullable=True, comment="目标数值")
     current_value = Column(Float, nullable=True, comment="当前进度值")
     milestone_points = Column(ARRAY(Float), nullable=True, comment="里程碑点")
-    progress_type = Column(String, nullable=True, comment="进度类型时间、数值或比例")
+    progress_type = Column(String, nullable=True, comment="进度类型：time/value/percentage")
+    description = Column(Text, nullable=True, comment="详细描述")
 
     @classmethod
     async def create_from_text(cls, text: str, user_id: UUID, db: Session) -> "Memory":

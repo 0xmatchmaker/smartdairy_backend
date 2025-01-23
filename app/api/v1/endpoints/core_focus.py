@@ -8,8 +8,11 @@ from app.api.v1.schemas.timeline import TimelineResponse
 from typing import List, Optional
 from uuid import UUID
 from datetime import date
+import logging
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 @router.post("/important", response_model=ImportantMatterResponse)
 async def create_important_matter(
@@ -95,12 +98,20 @@ async def create_long_term_goal(
     current_user = Depends(get_current_user)
 ):
     """创建长期目标"""
+    logger.info("=== API Layer Debug ===")
+    logger.info(f"Request Data: {goal.model_dump()}")
+    
     service = CoreFocusService(db)
-    memory = await service.create_long_term_goal(
-        user_id=current_user.id,
-        **goal.model_dump()
-    )
-    return LongTermGoalResponse.from_memory(memory)
+    try:
+        memory = await service.create_long_term_goal(
+            user_id=current_user.id,
+            **goal.model_dump()
+        )
+        logger.info(f"Created Memory: {memory.__dict__}")
+        return LongTermGoalResponse.from_memory(memory)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise
 
 @router.put("/long-term/{goal_id}/progress")
 async def update_goal_progress(

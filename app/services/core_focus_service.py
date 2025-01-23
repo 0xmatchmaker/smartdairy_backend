@@ -196,22 +196,41 @@ class CoreFocusService:
         target_value: float,
         progress_type: str,
         milestone_points: List[float] = None,
-        tags: List[str] = None
+        tags: List[str] = None,
+        description: str = None
     ) -> Memory:
         """创建长期目标"""
+        # 使用 logger 而不是 print
+        logger.info("=== Service Layer Debug ===")
+        logger.info(f"Memory Type: {MemoryType.CORE_FOCUS}")
+        logger.info(f"Focus Type: {CoreFocusType.LONG_TERM}")
+        logger.info(f"Memory Type Value: {MemoryType.CORE_FOCUS.value}")
+        logger.info(f"Focus Type Value: {CoreFocusType.LONG_TERM.value}")
+        
+        # 检查枚举类型
+        logger.info("\n=== Enum Debug ===")
+        logger.info(f"Memory Type Enum: {MemoryType.__members__}")
+        logger.info(f"Core Focus Type Enum: {CoreFocusType.__members__}")
+        
         memory = Memory(
             user_id=user_id,
             content=content,
-            memory_type=MemoryType.CORE_FOCUS,
-            focus_type=CoreFocusType.LONG_TERM,
+            memory_type=MemoryType.CORE_FOCUS,  # 不使用 .value
+            focus_type=CoreFocusType.LONG_TERM,  # 不使用 .value
             is_long_term=True,
             target_date=target_date,
             target_value=target_value,
             current_value=0,
             progress_type=progress_type,
             milestone_points=milestone_points,
-            tags=tags or []
+            tags=tags or [],
+            description=description
         )
+        
+        # 打印创建的对象
+        logger.info("\n=== Memory Object Debug ===")
+        logger.info(f"Memory Dict: {memory.__dict__}")
+        
         self.db.add(memory)
         self.db.commit()
         return memory
