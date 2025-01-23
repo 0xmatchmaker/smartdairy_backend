@@ -7,6 +7,7 @@ from uuid import UUID
 from app.core.logger import setup_logger
 from fastapi import HTTPException
 from app.services.timeline_service import TimelineService
+import sqlalchemy as sa
 
 logger = setup_logger("core_focus")
 
@@ -266,3 +267,76 @@ class CoreFocusService:
         self.db.add(activity)
         self.db.commit()
         return goal, completion_rate 
+
+    async def get_long_term_goals(
+        self,
+        user_id: UUID,
+        include_completed: bool = False  # 新增参数：是否包含已完成的目标
+    ) -> List[Memory]:
+        """获取用户的所有长期目标
+        
+        Args:
+            user_id (UUID): 用户ID
+            include_completed (bool, optional): 是否包含已完成的目标. Defaults to False.
+        
+        Returns:
+            List[Memory]: 长期目标列表，按目标日期升序排序
+        """
+        logger.info(f"获取用户 {user_id} 的长期目标列表")
+        
+        # 构建基础查询
+        query = self.db.query(Memory).filter(
+            Memory.user_id == user_id,
+            Memory.memory_type == MemoryType.CORE_FOCUS,
+            Memory.focus_type == CoreFocusType.LONG_TERM,
+            Memory.is_long_term == True
+        )
+        
+        # 如果不包含已完成的目标，添加条件
+        if not include_completed:
+            query = query.filter(
+                sa.or_(
+                    Memory.current_value < Memory.target_value,  # 未达到目标值
+                    Memory.current_value == None  # 或者还未开始
+                )
+            )
+        
+        # 按目标日期升序排序
+        goals = query.order_by(Memory.target_date.asc()).all()
+        
+        logger.info(f"找到 {len(goals)} 个长期目标")
+        return goals 
+
+    async def get_long_term_goal(
+        self,
+        goal_id: UUID,
+        user_id: UUID
+    ) -> Memory:
+        """获取单个长期目标详情
+        
+        Args:
+            goal_id (UUID): 目标ID
+            user_id (UUID): 用户ID
+            
+        Returns:
+            Memory: 目标详情
+            
+        Raises:
+            HTTPException: 如果目标不存在或不属于该用户
+        """
+        logger.info(f"获取目标 {goal_id} 的详情")
+        
+        goal = self.db.query(Memory).filter(
+            Memory.id == goal_id,
+            Memory.user_id == user_id,
+            Memory.memory_type == MemoryType.CORE_FOCUS,
+            Memory.focus_type == CoreFocusType.LONG_TERM,
+            Memory.is_long_term == True
+        ).first()
+        
+        if not goal:
+            logger.warning(f"目标 {goal_id} 不存在或不属于用户 {user_id}")
+            raise HTTPException(status_code=404, detail="Goal not found")
+        
+        logger.info(f"找到目标: {goal.content}")
+        return goal 
