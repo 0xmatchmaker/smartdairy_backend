@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.api.deps import get_current_user
 from app.services.core_focus_service import CoreFocusService
-from app.api.v1.schemas.core_focus import ImportantMatterCreate, ImportantMatterResponse, ImportantMatterWithActivities
+from app.api.v1.schemas.core_focus import ImportantMatterCreate, ImportantMatterResponse, ImportantMatterWithActivities, LongTermGoalCreate, GoalProgressUpdate, LongTermGoalResponse
 from app.api.v1.schemas.timeline import TimelineResponse
 from typing import List, Optional
 from uuid import UUID
@@ -86,4 +86,64 @@ async def get_matter_activities(
         matter_id=matter_id,
         user_id=current_user.id
     )
-    return ImportantMatterWithActivities.from_memory_and_activities(matter, activities) 
+    return ImportantMatterWithActivities.from_memory_and_activities(matter, activities)
+
+@router.post("/long-term", response_model=LongTermGoalResponse)
+async def create_long_term_goal(
+    goal: LongTermGoalCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """创建长期目标"""
+    service = CoreFocusService(db)
+    memory = await service.create_long_term_goal(
+        user_id=current_user.id,
+        **goal.model_dump()
+    )
+    return LongTermGoalResponse.from_memory(memory)
+
+@router.put("/long-term/{goal_id}/progress")
+async def update_goal_progress(
+    goal_id: UUID,
+    progress: GoalProgressUpdate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """更新目标进度"""
+    service = CoreFocusService(db)
+    return await service.update_goal_progress(
+        goal_id=goal_id,
+        **progress.model_dump()
+    )
+
+@router.get("/long-term", response_model=List[LongTermGoalResponse])
+async def list_long_term_goals(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """获取所有长期目标列表"""
+    service = CoreFocusService(db)
+    memories = await service.get_long_term_goals(user_id=current_user.id)
+    return [LongTermGoalResponse.from_memory(m) for m in memories]
+
+@router.get("/long-term/{goal_id}", response_model=LongTermGoalResponse)
+async def get_long_term_goal(
+    goal_id: UUID,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """获取单个长期目标详情"""
+    service = CoreFocusService(db)
+    memory = await service.get_long_term_goal(goal_id=goal_id, user_id=current_user.id)
+    return LongTermGoalResponse.from_memory(memory)
+
+@router.get("/long-term/{goal_id}/progress", response_model=List[TimelineResponse])
+async def get_goal_progress_history(
+    goal_id: UUID,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """获取目标的进度历史"""
+    service = CoreFocusService(db)
+    activities = await service.get_goal_progress_history(goal_id=goal_id, user_id=current_user.id)
+    return [TimelineResponse.from_orm(a) for a in activities] 

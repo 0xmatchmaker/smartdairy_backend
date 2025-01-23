@@ -98,3 +98,46 @@ class ImportantMatterWithActivities(BaseModel):
             total_minutes=total_seconds / 60,  # 秒转分钟显示
             completion_rate=(total_seconds / (matter.target_duration or 1)) * 100  # 直接用秒计算
         )
+
+class LongTermGoalCreate(BaseModel):
+    """创建长期目标的请求模型"""
+    content: str
+    target_date: date
+    target_value: float
+    progress_type: str  # 'time', 'value', 'percentage'
+    milestone_points: Optional[List[float]] = None
+    tags: Optional[List[str]] = None
+    description: Optional[str] = None
+
+class GoalProgressUpdate(BaseModel):
+    """更新目标进度的请求模型"""
+    current_value: float
+    note: Optional[str] = None
+
+class LongTermGoalResponse(BaseModel):
+    """长期目标响应模型"""
+    id: UUID
+    content: str
+    target_date: date
+    target_value: float
+    current_value: float
+    progress_type: str
+    milestone_points: Optional[List[float]]
+    completion_rate: float
+    tags: List[str]
+    description: Optional[str]
+
+    @classmethod
+    def from_memory(cls, memory: Memory) -> "LongTermGoalResponse":
+        return cls(
+            id=memory.id,
+            content=memory.content,
+            target_date=memory.target_date,
+            target_value=memory.target_value,
+            current_value=memory.current_value or 0,
+            progress_type=memory.progress_type,
+            milestone_points=memory.milestone_points,
+            completion_rate=(memory.current_value or 0) / memory.target_value * 100 if memory.target_value else 0,
+            tags=memory.tags,
+            description=memory.description
+        )

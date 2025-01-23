@@ -187,3 +187,63 @@ class CoreFocusService:
         
         logger.info(f"找到重要事项 '{matter.content}' 的 {len(activities)} 个相关活动")
         return matter, activities 
+
+    async def create_long_term_goal(
+        self,
+        user_id: UUID,
+        content: str,
+        target_date: date,
+        target_value: float,
+        progress_type: str,
+        milestone_points: List[float] = None,
+        tags: List[str] = None
+    ) -> Memory:
+        """创建长期目标"""
+        memory = Memory(
+            user_id=user_id,
+            content=content,
+            memory_type=MemoryType.CORE_FOCUS,
+            focus_type=CoreFocusType.LONG_TERM,
+            is_long_term=True,
+            target_date=target_date,
+            target_value=target_value,
+            current_value=0,
+            progress_type=progress_type,
+            milestone_points=milestone_points,
+            tags=tags or []
+        )
+        self.db.add(memory)
+        self.db.commit()
+        return memory
+
+    async def update_goal_progress(
+        self,
+        goal_id: UUID,
+        current_value: float,
+        note: str = None
+    ) -> Tuple[Memory, float]:
+        """更新目标进度"""
+        goal = self.db.query(Memory).filter(
+            Memory.id == goal_id,
+            Memory.is_long_term == True
+        ).first()
+        
+        if not goal:
+            raise HTTPException(status_code=404, detail="Goal not found")
+            
+        goal.current_value = current_value
+        completion_rate = (current_value / goal.target_value) * 100
+        
+        # 创建进度记录
+        activity = Memory(
+            user_id=goal.user_id,
+            content=f"进度更新: {note}" if note else f"进度更新到 {current_value}",
+            memory_type=MemoryType.TIMELINE,
+            tags=goal.tags,
+            start_time=datetime.now(),
+            end_time=datetime.now()
+        )
+        
+        self.db.add(activity)
+        self.db.commit()
+        return goal, completion_rate 

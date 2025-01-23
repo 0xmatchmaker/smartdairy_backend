@@ -10,4 +10,5 @@ class CoreFocusType(enum.Enum):
     CHANGE = "change"           # 今日改变
     EXTERNAL_EXPECT = "external_expect"  # 外部期待
     SELF_EXPECT = "self_expect"         # 个人期待
-    IMPORTANT = "important"             # 重要事项 
+    IMPORTANT = "important"             # 重要事项
+    LONG_TERM = "long_term"            # 长期目标 

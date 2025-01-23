@@ -68,6 +68,14 @@ class Memory(Base):
     parallel_group = Column(String, nullable=True, comment="并行组标识，同组活动可以并行")
     priority = Column(Integer, default=1, comment="活动优先级，用于并行活动的排序")
 
+    # 新增长期目标属性
+    is_long_term = Column(Boolean, default=False, comment="是否为长期目标")
+    target_date = Column(Date, nullable=True, comment="目标完成日期")
+    target_value = Column(Float, nullable=True, comment="目标数值")
+    current_value = Column(Float, nullable=True, comment="当前进度值")
+    milestone_points = Column(ARRAY(Float), nullable=True, comment="里程碑点")
+    progress_type = Column(String, nullable=True, comment="进度类型时间、数值或比例")
+
     @classmethod
     async def create_from_text(cls, text: str, user_id: UUID, db: Session) -> "Memory":
         """从自由文本创建结构化记忆"""
